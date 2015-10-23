@@ -13,7 +13,7 @@
         android:textColor="@color/title_foreground"
         android:textStyle="normal"
         android:typeface="serif"
-        android:textSize="20sp"
+        android:textSize="@dimen/detail_movie_title"
         android:layout_marginBottom="@dimen/activity_horizontal_margin"/>
 
     <LinearLayout
@@ -31,17 +31,79 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/rating"
-                android:textSize="10sp"
+                android:id="@+id/releasedate"
+                android:textSize="@dimen/detail_text"
                 android:textColor="@color/title_foreground"
-                />
+                android:layout_marginBottom="@dimen/detail_details_spacing"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/releasedate"
-                android:textSize="10sp"
-                android:textColor="@color/title_foreground"/>
+                android:id="@+id/rating"
+                android:textSize="@dimen/detail_text"
+                android:textColor="@color/title_foreground"
+                android:layout_marginBottom="5dp"
+                />
+
+            <RatingBar
+                android:id="@+id/rating_bar"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/detail_text"
+                android:layout_marginBottom="20dp"
+                style="@style/starRating"
+                android:isIndicator="true"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/detail_details_spacing"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/trailersText"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="@string/detail_trailer_text"
+                    android:textSize="@dimen/detail_general_header"
+                    android:textColor="@color/title_foreground"
+                    />
+
+                <ImageView
+                    android:id="@+id/trailersView"
+                    android:layout_width="@dimen/detail_eye_img_size"
+                    android:layout_height="@dimen/detail_eye_img_size"
+                    android:src="@drawable/eye"
+                    android:scaleType="centerInside"
+                    />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="@dimen/detail_details_spacing">
+
+                <TextView
+                    android:id="@+id/reviewsText"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="@string/detail_review_text"
+                    android:textColor="@color/title_foreground"
+                    android:textSize="@dimen/detail_general_header"
+                    />
+
+                <ImageView
+                    android:id="@+id/reviewsView"
+                    android:layout_width="@dimen/detail_eye_img_size"
+                    android:layout_height="@dimen/detail_eye_img_size"
+                    android:src="@drawable/eye"
+                    android:scaleType="centerInside"
+                    />
+
+            </LinearLayout>
 
         </LinearLayout>
 
@@ -70,7 +132,7 @@
             android:text="Overview"
             android:textStyle="normal"
             android:typeface="serif"
-            android:textSize="15sp"
+            android:textSize="@dimen/detail_overview_header"
             android:layout_marginBottom="10dp"/>
 
         <ScrollView
@@ -83,10 +145,12 @@
                 android:textColor="@color/title_foreground"
                 android:text=""
                 android:textStyle="normal"
-                android:textSize="12dp"
+                android:textSize="@dimen/detail_overview_text"
                 android:typeface="serif"
                 android:id="@+id/txtOverview"
+                android:layout_marginBottom="20dp"
                 />
+
         </ScrollView>
 
     </LinearLayout>

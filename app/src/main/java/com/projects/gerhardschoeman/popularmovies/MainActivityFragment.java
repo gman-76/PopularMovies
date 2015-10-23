@@ -1,10 +1,16 @@
 package com.projects.gerhardschoeman.popularmovies;
 
+import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.media.Image;
+import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -23,19 +29,42 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.projects.gerhardschoeman.popularmovies.data.MovieContract;
+import com.projects.gerhardschoeman.popularmovies.data.MovieProjections;
+
 /**
  * A placeholder fragment containing a simple view.
  */
-public class MainActivityFragment extends Fragment {
+public class MainActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>{
+
+    private final String LOGTAG = this.getClass().getSimpleName();
 
     public final String SORT_STATE_KEY = "SSKEY";
 
+    private final int LOADER_ID = 1;
+
     MovieCellAdapter cellAdapter = null;
     private ProgressBar loading = null;
-    private String currentSort = null;
+    private Utils.SORTORDER currentSort = Utils.SORTORDER.NO_ORDER;
+
+    public interface OnItemClickListener{
+        void onItemClicked(Uri uri);
+    }
+
+    OnItemClickListener itemClickListener;
 
     public MainActivityFragment() {
         //setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        try{
+            itemClickListener = (OnItemClickListener)getActivity();
+        }catch(ClassCastException e){
+            Log.e(LOGTAG,"Main activity does not implement onItemClickListener");
+        }
     }
 
     @Override
@@ -48,7 +77,7 @@ public class MainActivityFragment extends Fragment {
                 //currentSort = savedInstanceState.getString(SORT_STATE_KEY);
             }
         }
-        cellAdapter = new MovieCellAdapter(getActivity(),inflater);
+        cellAdapter = new MovieCellAdapter(getActivity(),null,0);
 
         GridView grid = (GridView)rootView.findViewById(R.id.gridView);
         grid.setAdapter(cellAdapter);
@@ -56,10 +85,11 @@ public class MainActivityFragment extends Fragment {
         grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Movie m = (Movie) cellAdapter.getItem(position);
-                Intent intent = new Intent(getActivity(), DetailActivity.class);
-                intent.putExtra("movie", m);
-                startActivity(intent);
+                Cursor cursor = (Cursor)parent.getItemAtPosition(position);
+                if(cursor!=null){
+                    Uri uri = MovieContract.MovieEntry.buildUriFromID(cursor.getLong(MovieProjections.ALL_COLUMNS.ID));
+                    itemClickListener.onItemClicked(uri);
+                }
             }
         });
 
@@ -70,9 +100,11 @@ public class MainActivityFragment extends Fragment {
                     int count = view.getCount();
                     if(view.getLastVisiblePosition()>=count - 1){
                         Log.d("GRIDVIEW", "ready to load more data - last visible position is " + Integer.toString(view.getLastVisiblePosition()));
-                        int lastPageLoaded = cellAdapter.pagesLoaded.get(cellAdapter.pagesLoaded.size()-1);
-                        MovieDBQueryTask queryTask = new MovieDBQueryTask(getActivity(),cellAdapter,loading,lastPageLoaded+1);
-                        queryTask.execute();
+                        int lastPageLoaded = -1;
+                        if(cellAdapter.pagesLoaded.size()>0){
+                            lastPageLoaded = cellAdapter.pagesLoaded.get(cellAdapter.pagesLoaded.size()-1);
+                        }
+                        loadExtraData(lastPageLoaded+1);
                     }
                 }
             }
@@ -92,8 +124,7 @@ public class MainActivityFragment extends Fragment {
         refresh.setOnClickListener(new ImageView.OnClickListener() {
             @Override
             public void onClick(View v) {
-                currentSort = null;
-                refreshData();
+                reloadData();
             }
         });
 
@@ -103,14 +134,32 @@ public class MainActivityFragment extends Fragment {
         return rootView;
     }
 
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        getLoaderManager().initLoader(LOADER_ID,null,this);
+        super.onActivityCreated(savedInstanceState);
+    }
+
+    void loadExtraData(int pageID){
+        loading.setVisibility(ProgressBar.VISIBLE);
+        MovieDBQueryTask queryTask = new MovieDBQueryTask(getActivity(),cellAdapter,loading,pageID);
+        queryTask.execute();
+    }
+
+    void reloadData(){
+        getActivity().getContentResolver().delete(MovieContract.MovieReviews.CONTENT_URI,null,null);
+        getActivity().getContentResolver().delete(MovieContract.MovieTrailers.CONTENT_URI,null,null);
+        getActivity().getContentResolver().delete(MovieContract.MovieEntry.CONTENT_URI,null,null);
+        currentSort = Utils.SORTORDER.NO_ORDER;
+        loadExtraData(0);
+    }
+
     void refreshData(){
-        String ds = Utils.getPreferredSortOrder(getActivity());
-        if(currentSort==null || !currentSort.equals(ds)) {
+        Utils.SORTORDER preferredSortOrder = Utils.getPreferredSortOrder(getActivity());
+        if(currentSort== Utils.SORTORDER.NO_ORDER || currentSort!=preferredSortOrder){
             loading.setVisibility(ProgressBar.VISIBLE);
-            cellAdapter.movies.clear();
-            MovieDBQueryTask queryTask = new MovieDBQueryTask(getActivity(), cellAdapter, loading, 0);
-            queryTask.execute();
-            currentSort = ds;
+            getLoaderManager().restartLoader(LOADER_ID,null,this);
+            currentSort = preferredSortOrder;
         }
     }
 
@@ -121,14 +170,6 @@ public class MainActivityFragment extends Fragment {
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        if(currentSort!=null){
-            outState.putString(SORT_STATE_KEY,currentSort);
-        }
-    }
-
-    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_mainfragment,menu);
     }
@@ -136,11 +177,27 @@ public class MainActivityFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if(item.getItemId()==R.id.action_refresh){
-            refreshData();
+            reloadData();
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        String so = MovieContract.MovieEntry.getSortOrderSelection(getActivity());
+        Uri uri = MovieContract.MovieEntry.CONTENT_URI;
+        return new CursorLoader(getActivity(),uri, MovieProjections.ALL_COLUMNS.COLUMNS,null,null,so);
+    }
 
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        cellAdapter.swapCursor(data);
+        loading.setVisibility(ProgressBar.GONE);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        cellAdapter.swapCursor(null);
+    }
 }

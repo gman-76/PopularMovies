@@ -7,4 +7,16 @@
     <dimen name="button_refresh_size">15dp</dimen>
     <dimen name="grid_vertical_spacing">10dp</dimen>
     <dimen name="grid_horizontal_spacing">2dp</dimen>
+
+    <dimen name="detail_movie_title">20sp</dimen>
+    <dimen name="detail_text">10sp</dimen>
+    <dimen name="detail_overview_header">15sp</dimen>
+    <dimen name="detail_general_header">12sp</dimen>
+    <dimen name="detail_overview_text">12sp</dimen>
+    <dimen name="detail_details_spacing">15dp</dimen>
+
+    <dimen name="detail_eye_img_size">20dp</dimen>
+    <dimen name="trailer_type_img">20dp</dimen>
+
+    <dimen name="review_list_text_size">10sp</dimen>
 </resources>

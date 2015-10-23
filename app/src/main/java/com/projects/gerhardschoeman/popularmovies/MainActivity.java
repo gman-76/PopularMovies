@@ -1,12 +1,16 @@
 package com.projects.gerhardschoeman.popularmovies;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MainActivityFragment.OnItemClickListener{
+
+    private final String LOGTAG = this.getClass().getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,5 +43,12 @@ public class MainActivity extends AppCompatActivity {
         }*/
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onItemClicked(Uri uri) {
+        Intent intent = new Intent(this, DetailActivity.class);
+        intent.setData(uri);
+        startActivity(intent);
     }
 }

@@ -5,9 +5,15 @@
 
     </style>
 
-    <style name="AppTheme.SortWindow">
+    <style name="AppTheme.PopupWindow">
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowCloseOnTouchOutside">true</item>
+    </style>
+
+    <style name="starRating" parent="Widget.AppCompat.RatingBar">
+        <item name="android:progressDrawable">@drawable/rating_layers</item>
+        <item name="android:maxHeight">@dimen/detail_text</item>
+        <item name="android:minHeight">@dimen/detail_text</item>
     </style>
 
 </resources>

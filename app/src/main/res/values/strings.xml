@@ -4,7 +4,18 @@
     <string name="sortby_title">Sort By</string>
     <string name="action_refresh">Refresh</string>
     <string name="title_activity_detail">Movie Detail</string>
-    <string name="hello_world">Hello world!</string>
     <string name="title_activity_sort">SortActivity</string>
     <string name="SORT_ORDER_KEY">sort_order</string>
+    <string name="SORT_DESC_POP">Popularity</string>
+    <string name="SORT_DESC_RATE">Rating</string>
+    <string name="detail_rating">Rating:</string>
+    <string name="detail_releasedate">Release Date:</string>
+    <string name="detail_trailer_text">Trailers</string>
+    <string name="detail_review_text">Reviews</string>
+    <string name="available">available</string>
+    <string name="review_author">Author:</string>
+    <string name="review_comment">Comment Summary:</string>
+
+    <string name="title_activity_view_trailer"></string>
+    <string name="title_activity_view_review"></string>
 </resources>

@@ -29,7 +29,22 @@
         <activity
             android:name=".SortActivity"
             android:label="@string/title_activity_sort"
-            android:theme="@style/AppTheme.SortWindow">
+            android:theme="@style/AppTheme.PopupWindow" >
+        </activity>
+
+        <provider
+            android:name=".data.MovieProvider"
+            android:authorities="com.projects.gerhardschoeman.popularmovies" />
+
+        <activity
+            android:name=".ViewTrailerActivity"
+            android:label="@string/title_activity_view_trailer"
+            android:theme="@style/AppTheme.PopupWindow" >
+        </activity>
+        <activity
+            android:name=".ViewReviewActivity"
+            android:label="@string/title_activity_view_review"
+            android:theme="@style/AppTheme.PopupWindow">
         </activity>
     </application>
 
