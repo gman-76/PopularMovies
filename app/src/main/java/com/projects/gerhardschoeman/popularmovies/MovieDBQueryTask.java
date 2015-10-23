@@ -1,5 +1,6 @@
 package com.projects.gerhardschoeman.popularmovies;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -7,6 +8,8 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.ProgressBar;
 import android.widget.Toast;
+
+import com.projects.gerhardschoeman.popularmovies.data.MovieContract;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -21,10 +24,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 
+import com.projects.gerhardschoeman.popularmovies.data.MovieContract.MovieTrailers;
+import com.projects.gerhardschoeman.popularmovies.data.MovieContract.MovieReviews;
+
 /**
  * Created by Gerhard on 05/10/2015.
  */
-public class MovieDBQueryTask extends AsyncTask<Void,Void,Movie[]> {
+public class MovieDBQueryTask extends AsyncTask<Void,Void,Void> {
 
     private final String LOGTAG=this.getClass().getSimpleName();
 
@@ -40,8 +46,7 @@ public class MovieDBQueryTask extends AsyncTask<Void,Void,Movie[]> {
         pageToLoad=page;
     }
 
-    @Override
-    protected Movie[] doInBackground(Void... params) {
+    private String getDiscoverURL(){
         Uri.Builder uri = new Uri.Builder();
         uri.scheme("http");
         uri.authority("api.themoviedb.org");
@@ -49,7 +54,7 @@ public class MovieDBQueryTask extends AsyncTask<Void,Void,Movie[]> {
         uri.appendPath("discover");
         uri.appendPath("movie");
         uri.appendQueryParameter("api_key",BuildConfig.MOVIE_DB_API_KEY);
-        String sort = Utils.getPreferredSortOrder(context);
+        String sort = Utils.getPreferredSortOrderValue(context);
         uri.appendQueryParameter("sort_by",sort);
         if(sort.equals("vote_average.desc") || sort.equals("vote_average.asc")){
             uri.appendQueryParameter("vote_count.gte","50");
@@ -65,12 +70,41 @@ public class MovieDBQueryTask extends AsyncTask<Void,Void,Movie[]> {
         }else{
             cellAdapter.pagesLoaded.clear();
         }
-        String url = uri.build().toString();
-        Log.d(LOGTAG,url);
+        return uri.build().toString();
+    }
+
+    private String getTrailerURL(long id){
+        Uri.Builder uri = new Uri.Builder();
+        uri.scheme("http");
+        uri.authority("api.themoviedb.org");
+        uri.appendPath("3");
+        uri.appendPath("movie");
+        uri.appendPath(Long.toString(id));
+        uri.appendPath("trailers");
+        uri.appendQueryParameter("api_key",BuildConfig.MOVIE_DB_API_KEY);
+        return uri.build().toString();
+    }
+
+    private String getReviewURL(long id,int page){
+        Uri.Builder uri = new Uri.Builder();
+        uri.scheme("http");
+        uri.authority("api.themoviedb.org");
+        uri.appendPath("3");
+        uri.appendPath("movie");
+        uri.appendPath(Long.toString(id));
+        uri.appendPath("reviews");
+        uri.appendQueryParameter("api_key", BuildConfig.MOVIE_DB_API_KEY);
+        uri.appendQueryParameter("page",Integer.toString(page));
+        return uri.build().toString();
+    }
+
+    @Override
+    protected Void doInBackground(Void... params) {
+        String url = getDiscoverURL();
+        Log.d(LOGTAG, url);
         String json = HttpGETJSONResponse(url);
-        Log.d(LOGTAG,json);
+        Log.d(LOGTAG, json);
         if(json.length()<1) return null;
-        ArrayList<Movie> movies = new ArrayList<>();
         try{
             JSONObject jsonRoot = new JSONObject(json);
             cellAdapter.currentPage = jsonRoot.getInt("page");
@@ -78,30 +112,84 @@ public class MovieDBQueryTask extends AsyncTask<Void,Void,Movie[]> {
             cellAdapter.pagesLoaded.add(cellAdapter.currentPage);
             JSONArray results = jsonRoot.getJSONArray("results");
             if(results!=null){
+                ArrayList<ContentValues> movies = new ArrayList<>();
+                ArrayList<ContentValues> trailers = new ArrayList<>();
+                ArrayList<ContentValues> reviews = new ArrayList<>();
                 for (int i=0;i<results.length();++i) {
                     JSONObject result = results.getJSONObject(i);
                     Movie movie = new Movie(result);
-                    if(movie!=null) movies.add(movie);
+                    //get trailers
+                    String trailerJSON = HttpGETJSONResponse(getTrailerURL(movie.id));
+                    if(trailerJSON!=null && trailerJSON.length()>0) {
+                        JSONObject trailerList = new JSONObject(trailerJSON);
+                        JSONArray youtube = trailerList.getJSONArray("youtube");
+                        if(youtube!=null){
+                            for(int j=0;j<youtube.length();++j){
+                                JSONObject trailer = youtube.getJSONObject(j);
+                                ContentValues trailerCV = new ContentValues();
+                                trailerCV.put(MovieTrailers._ID,movie.id);
+                                trailerCV.put(MovieTrailers.NAME,trailer.getString("name"));
+                                trailerCV.put(MovieTrailers.TYPE,"youtube");
+                                trailerCV.put(MovieTrailers.URL,trailer.getString("source"));
+                                trailers.add(trailerCV);
+                                movie.trailers++;
+                            }
+                        }
+                    }
+                    //get reviews
+                    String reviewJSON = HttpGETJSONResponse(getReviewURL(movie.id,1));
+                    if(reviewJSON!=null && reviewJSON.length()>0) {
+                        JSONObject reviewList = new JSONObject(reviewJSON);
+                        movie.reviews = reviewList.getInt("total_results");
+                        int thisPage=1;
+                        int pages = reviewList.getInt("total_pages");
+                        do{
+                            JSONArray reviewArray = reviewList.getJSONArray("results");
+                            for(int j=0;j<reviewArray.length();++j){
+                                JSONObject review = reviewArray.getJSONObject(j);
+                                ContentValues reviewCV = new ContentValues();
+                                reviewCV.put(MovieReviews._ID,movie.id);
+                                reviewCV.put(MovieReviews.AUTHOR,review.getString("author"));
+                                String content = review.getString("content");
+                                if(content.length()>50){
+                                    content = content.substring(0,46) + "...";
+                                }
+                                reviewCV.put(MovieReviews.BRIEF,content);
+                                reviewCV.put(MovieReviews.URL,review.getString("url"));
+                                reviews.add(reviewCV);
+                            }
+                            thisPage++;
+                            reviewJSON = HttpGETJSONResponse(getReviewURL(movie.id,thisPage));
+                            reviewList = new JSONObject(reviewJSON);
+                        }while(thisPage<=pages);
+                    }
+                    if(movie!=null) movies.add(movie.getContentValues());
+                }
+                context.getContentResolver().bulkInsert(MovieContract.MovieEntry.CONTENT_URI,
+                        movies.toArray(new ContentValues[movies.size()]));
+                for(ContentValues cv:movies){
+                    context.getContentResolver().delete(MovieTrailers.CONTENT_URI,MovieTrailers._ID+"=?",new String[]{cv.getAsString(MovieTrailers._ID)});
+                    context.getContentResolver().delete(MovieReviews.CONTENT_URI,MovieReviews._ID+"=?",new String[]{cv.getAsString(MovieReviews._ID)});
+                }
+                for(ContentValues cv:trailers){
+                    context.getContentResolver().insert(MovieTrailers.CONTENT_URI, cv);
+                }
+                for(ContentValues cv:reviews){
+                    context.getContentResolver().insert(MovieReviews.CONTENT_URI,cv);
                 }
             }
         }catch(JSONException e){
             Log.e(LOGTAG,"Unable to parse JSON response: " + e.getMessage());
         }
-        return movies.toArray(new Movie[movies.size()]);
+        return null;
     }
 
     @Override
-    protected void onPostExecute(Movie[] movies) {
-        if(movies==null) return;
-        for(Movie m : movies){
-            cellAdapter.movies.add(m);
-        }
-        cellAdapter.notifyDataSetChanged();
+    protected void onPostExecute(Void params) {
         loading.setVisibility(ProgressBar.GONE);
         Toast toast = Toast.makeText(context,"Data refreshed",Toast.LENGTH_SHORT);
         toast.show();
     }
-
 
     private String HttpGETJSONResponse(String urlStr)
     {
@@ -112,6 +200,7 @@ public class MovieDBQueryTask extends AsyncTask<Void,Void,Movie[]> {
             URL url = new URL(urlStr);
             conn = (HttpURLConnection)url.openConnection();
             conn.setRequestMethod("GET");
+            conn.setConnectTimeout(2000);
             conn.connect();
             InputStream is = conn.getInputStream();
             if(is==null){
