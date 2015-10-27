@@ -1,6 +1,7 @@
 package com.projects.gerhardschoeman.popularmovies;
 
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
@@ -20,6 +21,7 @@ public class DetailViewHolder {
     public TextView movieReviews;
     public ImageView trailersView;
     public ImageView reviewsView;
+    public ImageView btFavourite;
 
     public DetailViewHolder(View view){
         movieTitle = (TextView)view.findViewById(R.id.detailTitle);
@@ -32,5 +34,6 @@ public class DetailViewHolder {
         movieReviews = (TextView)view.findViewById(R.id.reviewsText);
         trailersView = (ImageView)view.findViewById(R.id.trailersView);
         reviewsView = (ImageView)view.findViewById(R.id.reviewsView);
+        btFavourite = (ImageView)view.findViewById(R.id.btFavourite);
     }
 }

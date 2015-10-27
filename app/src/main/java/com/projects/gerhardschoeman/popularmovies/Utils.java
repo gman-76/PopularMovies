@@ -14,7 +14,8 @@ public class Utils {
         POP_ASC,
         POP_DESC,
         RATE_ASC,
-        RATE_DESC
+        RATE_DESC,
+        FAV
     }
 
     public static String getPreferredSortOrderValue(Context context){
@@ -28,7 +29,9 @@ public class Utils {
             return so.endsWith("asc") ? SORTORDER.POP_ASC : SORTORDER.POP_DESC;
         }else if(so.startsWith("vote_average")){
             return so.endsWith("asc") ? SORTORDER.RATE_ASC : SORTORDER.RATE_DESC;
-        }
+        }else if(so.equals("favourite"))
+            return SORTORDER.FAV;
+
         return SORTORDER.NO_ORDER;
     }
 
@@ -40,6 +43,8 @@ public class Utils {
             case RATE_ASC:
             case RATE_DESC:
                 return context.getString(R.string.SORT_DESC_RATE);
+            case FAV:
+                return context.getString(R.string.detail_favourite);
         }
         return "";
     }

@@ -12,12 +12,27 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
 
     private final String LOGTAG = this.getClass().getSimpleName();
 
+    private final String DETAIL_FRAG_TAG = "DFTAG";
+
+    private boolean mTwoPane;
+
+    public static final String DETAIL_ARGS_URI_KEY = "URI_KEY";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setIcon(R.mipmap.ic_launcher);
+        mTwoPane=false;
+        if(findViewById(R.id.detail_fragment_container)!=null){
+            mTwoPane = true;
+            if(savedInstanceState==null){
+                getSupportFragmentManager().beginTransaction()
+                        .add(R.id.detail_fragment_container,new DetailActivityFragment(),DETAIL_FRAG_TAG)
+                        .commit();
+            }
+        }
     }
 
 
@@ -47,8 +62,18 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
 
     @Override
     public void onItemClicked(Uri uri) {
-        Intent intent = new Intent(this, DetailActivity.class);
-        intent.setData(uri);
-        startActivity(intent);
+        if(mTwoPane){
+            Bundle args = new Bundle();
+            args.putParcelable(DETAIL_ARGS_URI_KEY,uri);
+            DetailActivityFragment df = new DetailActivityFragment();
+            df.setArguments(args);
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.detail_fragment_container,df,DETAIL_FRAG_TAG)
+                    .commit();
+        }else {
+            Intent intent = new Intent(this, DetailActivity.class);
+            intent.setData(uri);
+            startActivity(intent);
+        }
     }
 }

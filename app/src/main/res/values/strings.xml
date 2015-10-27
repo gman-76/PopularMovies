@@ -18,4 +18,8 @@
 
     <string name="title_activity_view_trailer"></string>
     <string name="title_activity_view_review"></string>
+
+    <string name="detail_favourite">Favourite</string>
+
+    <string name="detail_share_menu">Share</string>
 </resources>

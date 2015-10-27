@@ -1,158 +1,196 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/app_background"
-    android:orientation="vertical"
-    android:paddingRight="10dp"
-    android:paddingLeft="10dp">
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/detailTitle"
-        android:textColor="@color/title_foreground"
-        android:textStyle="normal"
-        android:typeface="serif"
-        android:textSize="@dimen/detail_movie_title"
-        android:layout_marginBottom="@dimen/activity_horizontal_margin"/>
+    android:background="@color/app_background">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="2"
-        android:orientation="horizontal">
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/releasedate"
-                android:textSize="@dimen/detail_text"
-                android:textColor="@color/title_foreground"
-                android:layout_marginBottom="@dimen/detail_details_spacing"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/rating"
-                android:textSize="@dimen/detail_text"
-                android:textColor="@color/title_foreground"
-                android:layout_marginBottom="5dp"
-                />
-
-            <RatingBar
-                android:id="@+id/rating_bar"
-                android:layout_width="wrap_content"
-                android:layout_height="@dimen/detail_text"
-                android:layout_marginBottom="20dp"
-                style="@style/starRating"
-                android:isIndicator="true"/>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/detail_details_spacing"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/trailersText"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:text="@string/detail_trailer_text"
-                    android:textSize="@dimen/detail_general_header"
-                    android:textColor="@color/title_foreground"
-                    />
-
-                <ImageView
-                    android:id="@+id/trailersView"
-                    android:layout_width="@dimen/detail_eye_img_size"
-                    android:layout_height="@dimen/detail_eye_img_size"
-                    android:src="@drawable/eye"
-                    android:scaleType="centerInside"
-                    />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="@dimen/detail_details_spacing">
-
-                <TextView
-                    android:id="@+id/reviewsText"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:text="@string/detail_review_text"
-                    android:textColor="@color/title_foreground"
-                    android:textSize="@dimen/detail_general_header"
-                    />
-
-                <ImageView
-                    android:id="@+id/reviewsView"
-                    android:layout_width="@dimen/detail_eye_img_size"
-                    android:layout_height="@dimen/detail_eye_img_size"
-                    android:src="@drawable/eye"
-                    android:scaleType="centerInside"
-                    />
-
-            </LinearLayout>
-
-        </LinearLayout>
-
-        <com.projects.gerhardschoeman.popularmovies.ScaledImage
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="match_parent"
-            android:id="@+id/imgBackground"
-            android:contentDescription=""
-            android:layout_gravity="center_horizontal"
-            />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="3"
-        android:orientation="vertical"
-        android:layout_marginTop="10dp">
+        android:layout_height="match_parent"
+        android:background="@color/app_background"
+        android:paddingRight="10dp"
+        android:paddingLeft="10dp"
+        android:orientation="vertical">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:id="@+id/detailTitle"
             android:textColor="@color/title_foreground"
-            android:text="Overview"
             android:textStyle="normal"
             android:typeface="serif"
-            android:textSize="@dimen/detail_overview_header"
-            android:layout_marginBottom="10dp"/>
+            android:textSize="@dimen/detail_movie_title"
+            android:layout_marginBottom="@dimen/activity_horizontal_margin"/>
 
-        <ScrollView
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/releasedate"
+                    android:textSize="@dimen/detail_text"
+                    android:textColor="@color/title_foreground"
+                    android:layout_marginBottom="@dimen/detail_details_spacing"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/rating"
+                    android:textSize="@dimen/detail_text"
+                    android:textColor="@color/title_foreground"
+                    android:layout_marginBottom="5dp"
+                    />
+
+                <RatingBar
+                    android:id="@+id/rating_bar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/detail_text"
+                    android:layout_marginBottom="20dp"
+                    style="@style/starRating"
+                    android:isIndicator="true"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/detail_details_spacing"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/trailersText"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:text="@string/detail_trailer_text"
+                        android:textSize="@dimen/detail_general_header"
+                        android:textColor="@color/title_foreground"
+                        />
+
+                    <ImageView
+                        android:id="@+id/trailersView"
+                        android:layout_width="@dimen/detail_eye_img_size"
+                        android:layout_height="@dimen/detail_eye_img_size"
+                        android:src="@drawable/eye"
+                        android:scaleType="centerInside"
+                        android:background="@drawable/click_ripple"
+                        />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="@dimen/detail_details_spacing">
+
+                    <TextView
+                        android:id="@+id/reviewsText"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:text="@string/detail_review_text"
+                        android:textColor="@color/title_foreground"
+                        android:textSize="@dimen/detail_general_header"
+                        />
+
+                    <ImageView
+                        android:id="@+id/reviewsView"
+                        android:layout_width="@dimen/detail_eye_img_size"
+                        android:layout_height="@dimen/detail_eye_img_size"
+                        android:src="@drawable/eye"
+                        android:scaleType="centerInside"
+                        android:background="@drawable/click_ripple"
+                        />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:id="@+id/btFavourite"
+                        android:layout_width="@dimen/detail_favourite_star"
+                        android:layout_height="@dimen/detail_favourite_star"
+                        android:scaleType="centerInside"
+                        android:layout_gravity="center_horizontal"
+                        android:background="@drawable/click_ripple"
+                        />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/detail_favourite"
+                        android:textSize="@dimen/detail_text"
+                        android:typeface="serif"
+                        android:textColor="@color/title_foreground"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginBottom="@dimen/detail_details_spacing"/>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                >
+                <com.projects.gerhardschoeman.popularmovies.ScaledImage
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/imgBackground"
+                    android:contentDescription=""
+                    android:layout_gravity="center_horizontal"
+                    />
+            </FrameLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginTop="10dp">
 
             <TextView
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@color/title_foreground"
-                android:text=""
+                android:text="Overview"
                 android:textStyle="normal"
-                android:textSize="@dimen/detail_overview_text"
                 android:typeface="serif"
-                android:id="@+id/txtOverview"
-                android:layout_marginBottom="20dp"
-                />
+                android:textSize="@dimen/detail_overview_header"
+                android:layout_marginBottom="10dp"/>
 
-        </ScrollView>
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/title_foreground"
+                    android:text=""
+                    android:textStyle="normal"
+                    android:textSize="@dimen/detail_overview_text"
+                    android:typeface="serif"
+                    android:id="@+id/txtOverview"
+                    android:layout_marginBottom="20dp"
+                    />
+
+            </ScrollView>
+
+        </LinearLayout>
 
     </LinearLayout>
-
-</LinearLayout>
+</ScrollView>

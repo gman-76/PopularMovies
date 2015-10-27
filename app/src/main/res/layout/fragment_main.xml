@@ -22,6 +22,7 @@
             android:paddingRight="0dp"
             android:paddingEnd="0dp">
 
+
             <ImageView
                 android:id="@+id/btRefresh"
                 android:layout_width="@dimen/button_refresh_size"
@@ -29,6 +30,7 @@
                 android:src="@drawable/refresh"
                 android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"
+                style="@drawable/click_ripple"
                 />
 
             <TextView
@@ -40,6 +42,7 @@
                 android:textSize="@dimen/title_size"
                 android:layout_toLeftOf="@id/btRefresh"
                 android:layout_marginRight="20dp"
+                style="@drawable/click_ripple"
                 />
 
         </RelativeLayout>
@@ -66,6 +69,17 @@
             android:stretchMode="columnWidth"
             />
 
+        <TextView
+            android:id="@+id/grid_empty_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="NO ITEMS TO DISPLAY"
+            android:layout_centerInParent="true"
+            android:typeface="serif"
+            android:textColor="@color/title_foreground"
+            android:textSize="@dimen/detail_movie_title"
+            android:visibility="gone"/>
+        
         <ProgressBar
             android:id="@+id/progressLoading"
             android:layout_width="wrap_content"

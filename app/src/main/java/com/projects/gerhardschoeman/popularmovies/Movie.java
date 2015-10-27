@@ -26,7 +26,7 @@ public class Movie implements Serializable{
     public long votes;
     public String releaseDate;
     public double popularity;
-    public boolean isFavourite;
+    public int isFavourite;
     public int trailers;
     public int reviews;
 
@@ -41,7 +41,7 @@ public class Movie implements Serializable{
             votes = json.getLong("vote_count");
             releaseDate = json.getString("release_date");
             popularity =json.getDouble("popularity");
-            isFavourite=false;
+            isFavourite=0;
             trailers=0;
             reviews=0;
         }catch(JSONException e){

@@ -58,6 +58,7 @@ public class MovieContract {
 
         public static final String QUERY_ID_PARAM = "id";
         public static final String QUERY_TITLE_PARAM = "title";
+        public static final String QUERY_FAV_PARAM = "fav";
 
         public static final Uri buildUriFromID(long id){
             return CONTENT_URI.buildUpon().appendQueryParameter(QUERY_ID_PARAM,String.format("%d",id)).build();

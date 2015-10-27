@@ -51,6 +51,10 @@ public class MovieCellAdapter extends CursorAdapter {
         String sortText = Utils.getPreferrredSortOrderDesc(context) + ": ";
         if(sortText.startsWith("Popularity")) sortText += String.format("%.1f", cursor.getDouble(MovieProjections.ALL_COLUMNS.POPULARITY));
         else if(sortText.startsWith("Rating")) sortText += Double.toString(cursor.getDouble(MovieProjections.ALL_COLUMNS.RATING));
+        else if(sortText.startsWith("Fav")){
+            sortText = "";
+            //if(cursor.getInt(MovieProjections.ALL_COLUMNS.FAVOURITE)!=0) sortText = context.getString(R.string.detail_favourite);
+        }
         else sortText = null;
         if(sortText!=null) vh.movieSortText.setText(sortText);
     }

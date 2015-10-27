@@ -2,6 +2,7 @@ package com.projects.gerhardschoeman.popularmovies;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.media.Image;
 import android.net.Uri;
@@ -39,8 +40,6 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 
     private final String LOGTAG = this.getClass().getSimpleName();
 
-    public final String SORT_STATE_KEY = "SSKEY";
-
     private final int LOADER_ID = 1;
 
     MovieCellAdapter cellAdapter = null;
@@ -72,16 +71,12 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
-        if(savedInstanceState!=null) {
-            if(savedInstanceState.containsKey(SORT_STATE_KEY)){
-                //currentSort = savedInstanceState.getString(SORT_STATE_KEY);
-            }
-        }
         cellAdapter = new MovieCellAdapter(getActivity(),null,0);
 
         GridView grid = (GridView)rootView.findViewById(R.id.gridView);
+        grid.setNumColumns(getActivity().getResources().getConfiguration().orientation==Configuration.ORIENTATION_LANDSCAPE ? 3 : 2);
+        grid.setEmptyView(rootView.findViewById(R.id.grid_empty_view));
         grid.setAdapter(cellAdapter);
-
         grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -136,7 +131,8 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-        getLoaderManager().initLoader(LOADER_ID,null,this);
+        //getLoaderManager().initLoader(LOADER_ID,null,this);
+        //getLoaderManager().initLoader(LOADER_ID_FAVONLY,null,this);
         super.onActivityCreated(savedInstanceState);
     }
 
@@ -147,9 +143,9 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     }
 
     void reloadData(){
-        getActivity().getContentResolver().delete(MovieContract.MovieReviews.CONTENT_URI,null,null);
-        getActivity().getContentResolver().delete(MovieContract.MovieTrailers.CONTENT_URI,null,null);
-        getActivity().getContentResolver().delete(MovieContract.MovieEntry.CONTENT_URI,null,null);
+        //getActivity().getContentResolver().delete(MovieContract.MovieReviews.CONTENT_URI,null,null);
+        //getActivity().getContentResolver().delete(MovieContract.MovieTrailers.CONTENT_URI,null,null);
+        //getActivity().getContentResolver().delete(MovieContract.MovieEntry.CONTENT_URI,null,null);
         currentSort = Utils.SORTORDER.NO_ORDER;
         loadExtraData(0);
     }
@@ -158,8 +154,8 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
         Utils.SORTORDER preferredSortOrder = Utils.getPreferredSortOrder(getActivity());
         if(currentSort== Utils.SORTORDER.NO_ORDER || currentSort!=preferredSortOrder){
             loading.setVisibility(ProgressBar.VISIBLE);
-            getLoaderManager().restartLoader(LOADER_ID,null,this);
             currentSort = preferredSortOrder;
+            getLoaderManager().restartLoader(LOADER_ID, null, this);
         }
     }
 
@@ -185,9 +181,13 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        Log.d(LOGTAG,"Creating loader for sort");
         String so = MovieContract.MovieEntry.getSortOrderSelection(getActivity());
         Uri uri = MovieContract.MovieEntry.CONTENT_URI;
-        return new CursorLoader(getActivity(),uri, MovieProjections.ALL_COLUMNS.COLUMNS,null,null,so);
+        if(Utils.getPreferredSortOrder(getActivity())== Utils.SORTORDER.FAV){
+            uri = uri.buildUpon().appendQueryParameter(MovieContract.MovieEntry.QUERY_FAV_PARAM,"true").build();
+        }
+        return new CursorLoader(getActivity(), uri, MovieProjections.ALL_COLUMNS.COLUMNS, null, null, so);
     }
 
     @Override
