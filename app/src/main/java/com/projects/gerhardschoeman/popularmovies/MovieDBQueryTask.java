@@ -55,6 +55,7 @@ public class MovieDBQueryTask extends AsyncTask<Void,Void,Void> {
         uri.appendPath("movie");
         uri.appendQueryParameter("api_key",BuildConfig.MOVIE_DB_API_KEY);
         String sort = Utils.getPreferredSortOrderValue(context);
+        if(sort.equals("favourite")) return null;
         uri.appendQueryParameter("sort_by",sort);
         if(sort.equals("vote_average.desc") || sort.equals("vote_average.asc")){
             uri.appendQueryParameter("vote_count.gte","50");
@@ -101,6 +102,7 @@ public class MovieDBQueryTask extends AsyncTask<Void,Void,Void> {
     @Override
     protected Void doInBackground(Void... params) {
         String url = getDiscoverURL();
+        if(url==null) return null;
         Log.d(LOGTAG, url);
         String json = HttpGETJSONResponse(url);
         Log.d(LOGTAG, json);

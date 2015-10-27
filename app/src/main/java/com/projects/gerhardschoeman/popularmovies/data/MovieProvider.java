@@ -84,6 +84,12 @@ public class MovieProvider extends ContentProvider{
         Cursor retCursor = null;
         switch (match){
             case ALLMOVIES: {
+                boolean favonly = uri.getQueryParameter(MovieEntry.QUERY_FAV_PARAM)!=null &&
+                        uri.getQueryParameter(MovieEntry.QUERY_FAV_PARAM).equals("true");
+                if(favonly){
+                    if(selection==null) selection = ""; else selection += " AND ";
+                    selection += MovieEntry.MOVIE_FAVOURITE + "<>0";
+                }
                 retCursor = dbHelper.getReadableDatabase().query(MovieEntry.TABLE_NAME,
                         projection,
                         selection,
@@ -91,7 +97,6 @@ public class MovieProvider extends ContentProvider{
                         null,
                         null,
                         sortOrder);
-
             }
             break;
             case MOVIETITLE:{
@@ -201,12 +206,15 @@ public class MovieProvider extends ContentProvider{
                 try{
                     for (ContentValues cv:values) {
                         Cursor cursor = db.query(MovieEntry.TABLE_NAME,
-                                new String[]{MovieEntry._ID},
+                                new String[]{MovieEntry._ID,MovieEntry.MOVIE_FAVOURITE},
                                 MovieEntry._ID+"=?",
                                 new String[]{cv.getAsString(MovieEntry._ID)},
                                 null,null,null);
                         long ret = 0;
                         if(cursor!=null && cursor.moveToFirst()){
+                            //movie could've been marked as fav so keep this because new movie would be false by default
+                            int fav = cursor.getInt(cursor.getColumnIndex(MovieEntry.MOVIE_FAVOURITE));
+                            cv.put(MovieEntry.MOVIE_FAVOURITE,fav);
                             ret = db.update(MovieEntry.TABLE_NAME,cv,MovieEntry._ID + "=?",new String[]{cv.getAsString(MovieEntry._ID)});
                         }else {
                             ret = db.insert(MovieEntry.TABLE_NAME, null, cv);
@@ -242,6 +250,8 @@ public class MovieProvider extends ContentProvider{
             }
             break;
             case MOVIEID:{
+                selection = MovieEntry._ID + "=?";
+                selectionArgs = new String[]{uri.getQueryParameter(MovieEntry.QUERY_ID_PARAM)};
                 recsdeleted = dbHelper.getWritableDatabase().delete(MovieEntry.TABLE_NAME,selection,selectionArgs);
             }
             break;
@@ -268,6 +278,8 @@ public class MovieProvider extends ContentProvider{
         int recsupdated = 0;
         switch(match){
             case MOVIEID:{
+                selection = MovieEntry._ID + "=?";
+                selectionArgs = new String[]{uri.getQueryParameter(MovieEntry.QUERY_ID_PARAM)};
                 recsupdated = dbHelper.getWritableDatabase().update(MovieEntry.TABLE_NAME,values,selection,selectionArgs);
             }
             break;

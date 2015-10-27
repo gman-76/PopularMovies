@@ -12,5 +12,6 @@
         <item>popularity.desc</item>
         <item>vote_average.asc</item>
         <item>vote_average.desc</item>
+        <item>favourite</item>
     </string-array>
 </resources>

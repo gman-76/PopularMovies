@@ -28,7 +28,7 @@ public class SortActivity extends Activity {
         DisplayMetrics dm = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(dm);
 
-        getWindow().setLayout((int) (dm.widthPixels * 0.8), (int) (dm.heightPixels * 0.5));
+        getWindow().setLayout((int) (dm.widthPixels * 0.8), (int) (dm.heightPixels * 0.6));
 
         sortOrderValues = getResources().getStringArray(R.array.sortbyValues);
 
@@ -47,6 +47,7 @@ public class SortActivity extends Activity {
             case R.id.radioPopularityDown: so = sortOrderValues[1]; break;
             case R.id.radioRatingUp: so = sortOrderValues[2]; break;
             case R.id.radioRatingDown: so = sortOrderValues[3]; break;
+            case R.id.radioFavourite: so = sortOrderValues[4]; break;
         }
         if(so==null) return;
         if(so.equals(sortorder)) return;
@@ -77,15 +78,18 @@ public class SortActivity extends Activity {
         RadioButton rbPD = (RadioButton)findViewById(R.id.radioPopularityDown);
         RadioButton rbRU = (RadioButton)findViewById(R.id.radioRatingUp);
         RadioButton rbRD = (RadioButton)findViewById(R.id.radioRatingDown);
+        RadioButton rbF = (RadioButton)findViewById(R.id.radioFavourite);
         rbPU.setChecked(false);
         rbPD.setChecked(false);
         rbRU.setChecked(false);
         rbRD.setChecked(false);
+        rbF.setChecked(false);
         switch(id){
             case 0: rbPU.setChecked(true); break;
             case 1: rbPD.setChecked(true); break;
             case 2: rbRU.setChecked(true); break;
             case 3: rbRD.setChecked(true); break;
+            case 4: rbF.setChecked(true); break;
         }
     }
 }
