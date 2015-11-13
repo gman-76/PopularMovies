@@ -8,35 +8,46 @@
         android:id="@+id/imageView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingRight="@dimen/list_image_padding"
-        android:paddingLeft="@dimen/list_image_padding"
         />
 
-    <LinearLayout
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="@dimen/tile_title_frame"
+        android:background="@color/title_background"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentBottom="true"
-        android:orientation="vertical"
-        >
+        android:layout_alignParentBottom="true">
 
-        <TextView
-            android:id="@+id/textTitle"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="@color/title_foreground"
-            android:textSize="@dimen/title_size"
-            android:background="@color/title_background"
-            />
+            android:orientation="vertical"
+            android:paddingTop="@dimen/tile_title_spacing"
+            android:paddingLeft="@dimen/tile_title_spacing"
+            android:paddingStart="@dimen/tile_title_spacing"
+            >
 
-        <TextView
-            android:id="@+id/textSortSelection"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="@color/title_foreground"
-            android:textSize="@dimen/title_size"
-            android:background="@color/title_background"
-            />
-    </LinearLayout>
+            <TextView
+                android:id="@+id/textTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/title_foreground"
+                android:textSize="@dimen/title_size"
+                android:ellipsize="end"
+                android:singleLine="true"
+                />
+
+            <TextView
+                android:id="@+id/textSortSelection"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/title_foreground"
+                android:textSize="@dimen/subtitle_size"
+                android:ellipsize="end"
+                android:singleLine="true"
+                />
+
+        </LinearLayout>
+
+    </FrameLayout>
 
 </RelativeLayout>

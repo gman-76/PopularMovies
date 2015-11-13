@@ -1,8 +1,9 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">#3F51B5</item>
+        <item name="colorPrimaryDark">#ff000000</item>
     </style>
 
     <style name="AppTheme.PopupWindow">
@@ -14,6 +15,11 @@
         <item name="android:progressDrawable">@drawable/rating_layers</item>
         <item name="android:maxHeight">@dimen/detail_text</item>
         <item name="android:minHeight">@dimen/detail_text</item>
+    </style>
+
+    <style parent="android:Widget.EditText" name="EditTextAppTheme">
+        <item name="android:background">@drawable/apptheme_edit_text_holo_light</item>
+        <item name="android:textColor">@color/title_foreground</item>
     </style>
 
 </resources>

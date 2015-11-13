@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.Cursor;
+import android.graphics.Rect;
 import android.media.Image;
 import android.net.Uri;
 import android.preference.PreferenceManager;
@@ -12,6 +13,8 @@ import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -20,9 +23,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -32,19 +38,31 @@ import android.widget.Toast;
 
 import com.projects.gerhardschoeman.popularmovies.data.MovieContract;
 import com.projects.gerhardschoeman.popularmovies.data.MovieProjections;
+import com.projects.gerhardschoeman.popularmovies.data.MovieProvider;
 
 /**
  * A placeholder fragment containing a simple view.
  */
-public class MainActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>{
+public class MainActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, MovieCellAdapter.ClickHandler{
 
     private final String LOGTAG = this.getClass().getSimpleName();
 
     private final int LOADER_ID = 1;
 
+    private final String SEARCH_STATE = "SEARCH_STATE";
+
     MovieCellAdapter cellAdapter = null;
     private ProgressBar loading = null;
     private Utils.SORTORDER currentSort = Utils.SORTORDER.NO_ORDER;
+
+    private EditText mSearchText;
+    private String mCurrentSearch;
+    private TextView mEmptyView;
+
+    @Override
+    public void onClick(Uri uri) {
+        itemClickListener.onItemClicked(uri);
+    }
 
     public interface OnItemClickListener{
         void onItemClicked(Uri uri);
@@ -71,41 +89,43 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
-        cellAdapter = new MovieCellAdapter(getActivity(),null,0);
+        if(savedInstanceState!=null && savedInstanceState.containsKey(SEARCH_STATE)){
+            mCurrentSearch = savedInstanceState.getString(SEARCH_STATE);
+        }
 
-        GridView grid = (GridView)rootView.findViewById(R.id.gridView);
-        grid.setNumColumns(getActivity().getResources().getConfiguration().orientation==Configuration.ORIENTATION_LANDSCAPE ? 3 : 2);
-        grid.setEmptyView(rootView.findViewById(R.id.grid_empty_view));
+        cellAdapter = new MovieCellAdapter(getActivity(),this);
+
+        RecyclerView grid = (RecyclerView)rootView.findViewById(R.id.gridView);
+        int span = getActivity().getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE ? 3 : 2;
+        grid.setLayoutManager(new GridLayoutManager(getActivity(), span));
         grid.setAdapter(cellAdapter);
-        grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        grid.addItemDecoration(new RecyclerView.ItemDecoration() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Cursor cursor = (Cursor)parent.getItemAtPosition(position);
-                if(cursor!=null){
-                    Uri uri = MovieContract.MovieEntry.buildUriFromID(cursor.getLong(MovieProjections.ALL_COLUMNS.ID));
-                    itemClickListener.onItemClicked(uri);
-                }
+            public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+                int pxH = getResources().getDimensionPixelSize(R.dimen.grid_horizontal_spacing);
+                int pxV = getResources().getDimensionPixelSize(R.dimen.grid_vertical_spacing);
+                outRect.top = pxH;
+                outRect.right = outRect.left = pxV;
             }
         });
-
-        grid.setOnScrollListener(new GridView.OnScrollListener(){
+        grid.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
-            public void onScrollStateChanged(AbsListView view, int scrollState) {
-                if(scrollState==SCROLL_STATE_IDLE) {
-                    int count = view.getCount();
-                    if(view.getLastVisiblePosition()>=count - 1){
-                        Log.d("GRIDVIEW", "ready to load more data - last visible position is " + Integer.toString(view.getLastVisiblePosition()));
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    GridLayoutManager glm = (GridLayoutManager) recyclerView.getLayoutManager();
+                    int count = glm.getItemCount();
+                    if (glm.findLastVisibleItemPosition() >= count - 1) {
+                        Log.d("GRIDVIEW", "ready to load more data - last visible position is " + Integer.toString(glm.findLastVisibleItemPosition()));
                         int lastPageLoaded = -1;
-                        if(cellAdapter.pagesLoaded.size()>0){
-                            lastPageLoaded = cellAdapter.pagesLoaded.get(cellAdapter.pagesLoaded.size()-1);
+                        if (cellAdapter.pagesLoaded.size() > 0) {
+                            lastPageLoaded = cellAdapter.pagesLoaded.get(cellAdapter.pagesLoaded.size() - 1);
                         }
-                        loadExtraData(lastPageLoaded+1);
+                        loadExtraData(lastPageLoaded + 1);
                     }
                 }
             }
-            @Override
-            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) { }
         });
+
         TextView st = (TextView)rootView.findViewById(R.id.sortTitle);
         st.setOnClickListener(new TextView.OnClickListener() {
             @Override
@@ -123,6 +143,18 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
             }
         });
 
+        mSearchText = (EditText)rootView.findViewById(R.id.txtSearch);
+        ImageView search = (ImageView)rootView.findViewById(R.id.btSearch);
+        search.setOnClickListener(new ImageView.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+                searchMovie();
+            }
+        });
+
+        mEmptyView = (TextView)rootView.findViewById(R.id.grid_empty_view);
+
         loading = (ProgressBar)rootView.findViewById(R.id.progressLoading);
         loading.setVisibility(ProgressBar.GONE);
 
@@ -136,9 +168,23 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
         super.onActivityCreated(savedInstanceState);
     }
 
+    void searchMovie(){
+        String searchText = mSearchText.getText().toString();
+        if(searchText!=null && searchText.length()>0){
+            mCurrentSearch = searchText;
+            currentSort = Utils.SORTORDER.NO_ORDER;
+            loading.setVisibility(ProgressBar.VISIBLE);
+            MovieDBQueryTask queryTask = new MovieDBQueryTask(getActivity(),cellAdapter,loading,0,searchText);
+            queryTask.execute();
+            getLoaderManager().restartLoader(LOADER_ID, null, this);
+        }else{
+            mCurrentSearch = null;
+        }
+    }
+
     void loadExtraData(int pageID){
         loading.setVisibility(ProgressBar.VISIBLE);
-        MovieDBQueryTask queryTask = new MovieDBQueryTask(getActivity(),cellAdapter,loading,pageID);
+        MovieDBQueryTask queryTask = new MovieDBQueryTask(getActivity(),cellAdapter,loading,pageID,mCurrentSearch);
         queryTask.execute();
     }
 
@@ -163,6 +209,15 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     public void onResume() {
         super.onResume();
         refreshData();
+        getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if(mCurrentSearch!=null){
+            outState.putString(SEARCH_STATE,mCurrentSearch);
+        }
     }
 
     @Override
@@ -183,7 +238,8 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         Log.d(LOGTAG,"Creating loader for sort");
         String so = MovieContract.MovieEntry.getSortOrderSelection(getActivity());
-        Uri uri = MovieContract.MovieEntry.CONTENT_URI;
+        Uri uri = mCurrentSearch!=null && mCurrentSearch.length()>0 ? MovieContract.MovieEntry.buildUriFromTitle(mCurrentSearch) :
+                MovieContract.MovieEntry.CONTENT_URI;
         if(Utils.getPreferredSortOrder(getActivity())== Utils.SORTORDER.FAV){
             uri = uri.buildUpon().appendQueryParameter(MovieContract.MovieEntry.QUERY_FAV_PARAM,"true").build();
         }
@@ -194,6 +250,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         cellAdapter.swapCursor(data);
         loading.setVisibility(ProgressBar.GONE);
+        mEmptyView.setVisibility(cellAdapter.getItemCount()>0 ? TextView.GONE : TextView.VISIBLE);
     }
 
     @Override

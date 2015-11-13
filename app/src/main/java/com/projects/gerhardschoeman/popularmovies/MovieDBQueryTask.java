@@ -38,12 +38,18 @@ public class MovieDBQueryTask extends AsyncTask<Void,Void,Void> {
     Context context;
     ProgressBar loading;
     int pageToLoad;
+    String searchTitle;
 
     MovieDBQueryTask(Context c, MovieCellAdapter ad,ProgressBar p,int page){
+        this(c,ad,p,page,null);
+    }
+
+    MovieDBQueryTask(Context c, MovieCellAdapter ad,ProgressBar p,int page,String search){
         context = c;
         cellAdapter = ad;
         loading = p;
         pageToLoad=page;
+        searchTitle = search;
     }
 
     private String getDiscoverURL(){
@@ -51,15 +57,21 @@ public class MovieDBQueryTask extends AsyncTask<Void,Void,Void> {
         uri.scheme("http");
         uri.authority("api.themoviedb.org");
         uri.appendPath("3");
-        uri.appendPath("discover");
+        if(searchTitle==null) uri.appendPath("discover"); else uri.appendPath("search");
         uri.appendPath("movie");
         uri.appendQueryParameter("api_key",BuildConfig.MOVIE_DB_API_KEY);
-        String sort = Utils.getPreferredSortOrderValue(context);
-        if(sort.equals("favourite")) return null;
-        uri.appendQueryParameter("sort_by",sort);
-        if(sort.equals("vote_average.desc") || sort.equals("vote_average.asc")){
-            uri.appendQueryParameter("vote_count.gte","50");
+
+        if(searchTitle==null) {
+            String sort = Utils.getPreferredSortOrderValue(context);
+            if (sort.equals("favourite")) return null;
+            uri.appendQueryParameter("sort_by", sort);
+            if (sort.equals("vote_average.desc") || sort.equals("vote_average.asc")) {
+                uri.appendQueryParameter("vote_count.gte", "50");
+            }
+        }else{
+            uri.appendQueryParameter("query",searchTitle);
         }
+
         if(pageToLoad>0){
             boolean loaded=false;
             for (int i=0;!loaded && i<cellAdapter.pagesLoaded.size();++i) {

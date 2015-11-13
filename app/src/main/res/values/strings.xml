@@ -22,4 +22,8 @@
     <string name="detail_favourite">Favourite</string>
 
     <string name="detail_share_menu">Share</string>
+
+    <string name="search_hint">Search</string>
+
+    <string name="grid_no_items">NO ITEMS TO DISPLAY</string>
 </resources>

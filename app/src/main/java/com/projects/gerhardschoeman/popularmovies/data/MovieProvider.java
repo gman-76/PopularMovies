@@ -100,12 +100,12 @@ public class MovieProvider extends ContentProvider{
             }
             break;
             case MOVIETITLE:{
-                selection = MovieEntry.MOVIE_NAME + "=?";
-                selectionArgs = new String[]{uri.getQueryParameter(MovieEntry.QUERY_TITLE_PARAM)};
+                selection = MovieEntry.MOVIE_NAME + " like '%" + uri.getQueryParameter(MovieEntry.QUERY_TITLE_PARAM) + "%'";
+                selectionArgs = new String[]{"'%" + uri.getQueryParameter(MovieEntry.QUERY_TITLE_PARAM) + "%'"};
                 retCursor = dbHelper.getReadableDatabase().query(MovieEntry.TABLE_NAME,
                         projection,
                         selection,
-                        selectionArgs,
+                        null,//selectionArgs,
                         null,
                         null,
                         sortOrder);

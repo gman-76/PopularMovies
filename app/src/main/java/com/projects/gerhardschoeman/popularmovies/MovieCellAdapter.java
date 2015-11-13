@@ -2,6 +2,8 @@ package com.projects.gerhardschoeman.popularmovies;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.net.Uri;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -16,6 +18,7 @@ import android.widget.ProgressBar;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
+import com.projects.gerhardschoeman.popularmovies.data.MovieContract;
 import com.projects.gerhardschoeman.popularmovies.data.MovieProjections;
 import com.squareup.picasso.Picasso;
 
@@ -24,39 +27,62 @@ import java.util.ArrayList;
 /**
  * Created by Gerhard on 05/10/2015.
  */
-public class MovieCellAdapter extends CursorAdapter {
+public class MovieCellAdapter extends RecyclerView.Adapter<MovieCellViewHolder> implements MovieCellViewHolder.onClickCallback{
 
-    //public ArrayList<Movie> movies = new ArrayList<Movie>();
     public int pageCount;
     public int currentPage;
     public ArrayList<Integer> pagesLoaded = new ArrayList<Integer>();
 
-    public MovieCellAdapter(Context context, Cursor c, int flags) {
-        super(context, c, flags);
+    private Context mContext;
+    private Cursor mCursor;
+
+    public interface ClickHandler{
+        void onClick(Uri uri);
+    }
+
+    private ClickHandler clickHandler;
+
+    @Override
+    public void onViewHolderClick(int cursorPosition) {
+        mCursor.moveToPosition(cursorPosition);
+        clickHandler.onClick(MovieContract.MovieEntry.buildUriFromID(mCursor.getInt(MovieProjections.ALL_COLUMNS.ID)));
+    }
+
+    public MovieCellAdapter(Context context,ClickHandler cH) {
+        mContext = context;
+        clickHandler = cH;
     }
 
     @Override
-    public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        View nv = LayoutInflater.from(context).inflate(R.layout.tile_view,parent,false);
-        MovieCellViewHolder vh = new MovieCellViewHolder(nv);
-        nv.setTag(vh);
-        return nv;
+    public int getItemCount() {
+        if(mCursor==null) return 0;
+        return mCursor.getCount();
     }
 
     @Override
-    public void bindView(View view, Context context, Cursor cursor) {
-        MovieCellViewHolder vh = (MovieCellViewHolder)view.getTag();
-        Picasso.with(context).load(cursor.getString(MovieProjections.ALL_COLUMNS.POSTER)).error(R.drawable.noimage).into(vh.movieImage);
-        vh.movieTitle.setText(cursor.getString(MovieProjections.ALL_COLUMNS.NAME));
-        String sortText = Utils.getPreferrredSortOrderDesc(context) + ": ";
-        if(sortText.startsWith("Popularity")) sortText += String.format("%.1f", cursor.getDouble(MovieProjections.ALL_COLUMNS.POPULARITY));
-        else if(sortText.startsWith("Rating")) sortText += Double.toString(cursor.getDouble(MovieProjections.ALL_COLUMNS.RATING));
+    public MovieCellViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        View nv = LayoutInflater.from(parent.getContext()).inflate(R.layout.tile_view, parent, false);
+        return new MovieCellViewHolder(nv,this);
+    }
+
+    @Override
+    public void onBindViewHolder(MovieCellViewHolder holder, int position) {
+        mCursor.moveToPosition(position);
+        Picasso.with(mContext).load(mCursor.getString(MovieProjections.ALL_COLUMNS.POSTER)).error(R.drawable.noimage).into(holder.movieImage);
+        holder.movieTitle.setText(mCursor.getString(MovieProjections.ALL_COLUMNS.NAME));
+        String sortText = Utils.getPreferrredSortOrderDesc(mContext) + ": ";
+        if(sortText.startsWith("Popularity")) sortText += String.format("%.1f", mCursor.getDouble(MovieProjections.ALL_COLUMNS.POPULARITY));
+        else if(sortText.startsWith("Rating")) sortText += Double.toString(mCursor.getDouble(MovieProjections.ALL_COLUMNS.RATING));
         else if(sortText.startsWith("Fav")){
             sortText = "";
-            //if(cursor.getInt(MovieProjections.ALL_COLUMNS.FAVOURITE)!=0) sortText = context.getString(R.string.detail_favourite);
         }
         else sortText = null;
-        if(sortText!=null) vh.movieSortText.setText(sortText);
+        if(sortText!=null) holder.movieSortText.setText(sortText);
+    }
+
+    public void swapCursor(Cursor c){
+        mCursor = c;
+        notifyDataSetChanged();
     }
 
 }
